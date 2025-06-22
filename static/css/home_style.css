@@ -1,0 +1,26 @@
+
+/* Override background for polls list page with gradient */
+body.polls-list-page {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%) !important;
+    min-height: 100vh;
+}
+/* Styles for polls list page: gradient background */
+.polls-list-page {
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+    /* Fallback single color */
+    background-color: #f6d365;
+    min-height: 100vh;
+    padding: 2rem 0;
+}
+/* Background for home page */
+body.home-page {
+    background: url('../img/background.jpg') center center / cover no-repeat fixed;
+    min-height: 100vh;
+}
+
+
+.polls-list-page .container {
+    background-color: rgba(255, 255, 255, 0.75);
+    padding: 2rem;
+    border-radius: 0.5rem;
+}

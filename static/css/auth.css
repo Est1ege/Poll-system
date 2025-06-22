@@ -1,0 +1,36 @@
+
+/* auth.css */
+body.auth-page {
+  background: url('../img/voting-pattern.png') center center / cover no-repeat fixed !important;
+}
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+}
+.auth-card {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2rem;
+  border-radius: 1rem;
+  max-width: 500px;
+  width: 100%;
+  color: #333 !important;
+}
+.auth-card h1 {
+  margin-bottom: 1rem;
+  word-break: break-word;
+}
+.auth-card .form-label, .auth-card label {
+  font-weight: 500;
+  margin-bottom: .5rem;
+  color: #333 !important;
+}
+.auth-card .form-control {
+  border-radius: .5rem;
+  color: #333;
+}
+.auth-card .btn {
+  border-radius: .5rem;
+}

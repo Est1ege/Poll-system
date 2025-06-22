@@ -1,0 +1,324 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2025 THE PACKAGE'S COPYRIGHT HOLDER
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Django-Poll-App 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-06-12 02:19+0500\n"
+"PO-Revision-Date: 2025-06-17 01:30+0500\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: Kazakh <kk@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: accounts/templates/accounts/login.html:5
+#: accounts/templates/accounts/register.html:5
+msgid "Vote now"
+msgstr "Қазір дауыс беру"
+
+#: accounts/templates/accounts/login.html:8
+#: accounts/templates/accounts/login.html:34
+msgid "Login"
+msgstr "Кіру"
+
+#: polls/views.py:281
+msgid "You already voted this poll!"
+msgstr "Сіз бұл сауалнамаға бұрын дауыс бергенсіз!"
+
+#: polls/views.py:284
+msgid "This is a quiz"
+msgstr "Бұл викторина"
+
+#: accounts/templates/accounts/login.html:14
+#: accounts/templates/accounts/register.html:18
+#: polls/templates/polls/add_choice.html:36
+#: polls/templates/polls/poll_edit.html:47
+#: polls/templates/polls/poll_result.html:27
+#: polls/templates/polls/polls_list.html:39
+msgid "Close"
+msgstr "Жабу"
+
+#: accounts/templates/accounts/login.html:24
+msgid "Username"
+msgstr "Пайдаланушы аты"
+
+#: accounts/templates/accounts/login.html:26
+msgid "Enter Username"
+msgstr "Пайдаланушы атын енгізіңіз"
+
+#: accounts/templates/accounts/login.html:29
+#: accounts/templates/accounts/login.html:31
+msgid "Password"
+msgstr "Құпия сөз"
+
+#: accounts/templates/accounts/login.html:39
+msgid "Don't have an account?"
+msgstr "Тіркелгіңіз жоқ па?"
+
+#: accounts/templates/accounts/login.html:40
+#: accounts/templates/accounts/register.html:28
+msgid "Sign Up"
+msgstr "Тіркелу"
+
+#: accounts/templates/accounts/register.html:10
+msgid "Already have an account?"
+msgstr "Тіркелгіңіз бар ма?"
+
+#: accounts/templates/accounts/register.html:11
+msgid "Login Here"
+msgstr "Мұнда кіру"
+
+#: pollme/settings.py:120
+msgid "English"
+msgstr "Ағылшын"
+
+#: pollme/settings.py:121
+msgid "Русский"
+msgstr "Орыс"
+
+#: pollme/settings.py:122
+msgid "Қазақша"
+msgstr "Қазақша"
+
+#: polls/templates/polls/add_choice.html:9
+msgid "Update choice"
+msgstr "Таңдауды жаңарту"
+
+#: polls/templates/polls/add_choice.html:11
+msgid "Add new choice"
+msgstr "Жаңа таңдау қосу"
+
+#: polls/templates/polls/add_choice.html:36
+#: polls/templates/polls/poll_edit.html:39
+msgid "Update"
+msgstr "Жаңарту"
+
+#: polls/templates/polls/add_choice.html:44
+#: polls/templates/polls/poll_edit.html:47
+msgid "Delete"
+msgstr "Жою"
+
+#: polls/templates/polls/add_choice.html:48
+#: polls/templates/polls/polls_list.html:39
+msgid "Add"
+msgstr "Қосу"
+
+#: polls/templates/polls/add_poll.html:8
+msgid "Create new poll"
+msgstr "Жаңа сауалнама жасау"
+
+#: polls/templates/polls/add_poll.html:31
+msgid "Add Poll"
+msgstr "Сауалнама қосу"
+
+#: polls/templates/polls/add_poll.html:38
+msgid "Back"
+msgstr "Артқа"
+
+#: polls/templates/polls/endpoll.html:26
+#, python-format
+msgid "Result for: %(poll.text)s"
+msgstr "Нәтиже: %(poll.text)s"
+
+#: polls/templates/polls/endpoll.html:40
+#, python-format
+msgid "%(name)s — %(percent)s%%"
+msgstr "%(name)s — %(percent)s%%"
+
+#: polls/templates/polls/endpoll.html:62
+#: polls/templates/polls/poll_result.html:80
+msgid "Back To Polls"
+msgstr "Сауалнамаларға оралу"
+
+#: polls/templates/polls/poll_detail.html:6
+msgid "Polls details page"
+msgstr "Сауалнама туралы бет"
+
+#: polls/templates/polls/poll_detail.html:45
+#: polls/templates/polls/polls_list.html:35
+msgid "Vote"
+msgstr "Дауыс беру"
+
+#: polls/templates/polls/poll_detail.html:53
+msgid "Cancel"
+msgstr "Бас тарту"
+
+#: polls/templates/polls/poll_edit.html:8
+msgid "Edit poll"
+msgstr "Сауалнаманы өңдеу"
+
+#: polls/templates/polls/poll_edit.html:45
+#: polls/templates/polls/polls_list.html:70
+msgid "Are you sure?"
+msgstr "Сіз сенімдісіз бе?"
+
+#: polls/templates/polls/poll_edit.html:54
+msgid "Add Choice"
+msgstr "Таңдау қосу"
+
+#: polls/templates/polls/poll_edit.html:59
+msgid "Choices"
+msgstr "Таңдаулар"
+
+#: polls/templates/polls/poll_result.html:27
+#, python-format
+msgid "Result for: %(text)s"
+msgstr "Нәтиже: %(text)s"
+
+#: polls/templates/polls/poll_result.html:33
+#, python-format
+msgid "\"%(text)s\" Has Ended Polling!"
+msgstr "\"%(text)s\" дауыс беру аяқталды!"
+
+#: polls/templates/polls/poll_result.html:39
+#, python-format
+msgid "Total: %(total)s votes"
+msgstr "Барлығы: %(total)s дауыс"
+
+#: polls/templates/polls/poll_result.html:56
+#, python-format
+msgid "%(name|truncatewords:2)s — %(percent)s%%"
+msgstr "%(name|truncatewords:2)s — %(percent)s%%"
+
+#: polls/templates/polls/polls_list.html:25
+msgid "Name"
+msgstr "Атау"
+
+#: polls/templates/polls/polls_list.html:30
+msgid "Date"
+msgstr "Күні"
+
+#: polls/templates/polls/polls_list.html:47
+msgid "Search"
+msgstr "Іздеу"
+
+#: polls/templates/polls/polls_list.html:69
+msgid "End Poll"
+msgstr "Сауалнаманы аяқтау"
+
+#: polls/templates/polls/polls_list.html:78
+msgid "Edit Poll"
+msgstr "Сауалнаманы өңдеу"
+
+#: polls/templates/polls/polls_list.html:92
+msgid "First"
+msgstr "Алғашқы"
+
+#: polls/templates/polls/polls_list.html:97
+msgid "Previous"
+msgstr "Алдыңғы"
+
+#: polls/templates/polls/polls_list.html:111
+msgid "Next"
+msgstr "Келесі"
+
+#: polls/templates/polls/polls_list.html:116
+msgid "Last"
+msgstr "Соңғы"
+
+#: templates/base.html:10
+msgid "Poll Me | Polls List"
+msgstr "Poll Me | Сауалнамалар тізімі"
+
+#: templates/home.html:13
+msgid "PollMe - Get Started!"
+msgstr "PollMe — Бастау!"
+
+#: templates/home.html:14
+msgid "Your Voice Matters!"
+msgstr "Сіздің дауысыңыз маңызды!"
+
+#: templates/home.html:16
+msgid "Get Started!"
+msgstr "Бастау!"
+
+#: templates/includes/navbar.html:XX
+msgid "Register"
+msgstr "Тіркелу"
+
+#: templates/includes/navbar.html:YY
+msgid "Logout"
+msgstr "Шығу"
+
+#: polls/templates/polls/add_poll.html:ZZ
+msgid "Text"
+msgstr "Мәтін"
+
+#: polls/templates/polls/add_poll.html:AA
+msgid "Choice 1"
+msgstr "Таңдау 1"
+
+#: polls/templates/polls/add_poll.html:BB
+msgid "Choice 2"
+msgstr "Таңдау 2"
+
+#: templates/includes/navbar.html:CC
+msgid "Polls"
+msgstr "Сауалнамалар"
+
+#: templates/includes/navbar.html:DD
+msgid "My Polls"
+msgstr "Менің сауалнамаларым"
+
+#: polls/templates/polls/poll_edit.html:EE
+msgid "Delete Poll"
+msgstr "Сауалнаманы жою"
+
+#: polls/forms.py:287
+msgid "Question text"
+msgstr "Сұрақ мәтіні"
+
+#: polls/forms.py:293
+msgid "Correct"
+msgstr "Дұрыс"
+
+#: polls/forms.py:296
+msgid "Correct answer"
+msgstr "Дұрыс жауап"
+
+#: polls/forms.py:299
+msgid "Choice text"
+msgstr "Таңдау мәтіні"
+
+#: polls/forms.py:XX
+msgid "Confirm Password"
+msgstr "Құпия сөзді растау"
+
+#: polls/forms.py:XX
+msgid "Enter Email"
+msgstr "Электрондық пошта мекенжайыңызды енгізіңіз"
+
+#: polls/templates/polls/already_voted.html:5
+msgid "You have already voted in this poll."
+msgstr "Сіз бұл сауалнамаға бұрын дауыс бергенсіз!"
+
+#: polls/templates/polls/already_voted.html:8
+msgid "View Results"
+msgstr "Нәтижелерді көру"
+
+#: polls/templates/polls/already_voted.html:9
+msgid "Back to Polls"
+msgstr "Сауалнамалар тізіміне қайту"
+
+#: polls/templates/polls/polls_list.html:3
+msgid "Welcome to Polls List!"
+msgstr "Сауалнамалар тізіміне қош келдіңіз!"
+
+#: polls/templates/polls/poll_detail.html:5
+msgid "Poll Detail"
+msgstr "Сауалнама ақпараттары"  # для Kazakh
+
+#: polls/templates/polls/add_poll.html:8
+msgid "Create New Poll"
+msgstr "Жаңа сауалнама жасау"
+
+msgid "polling has ended"
+msgstr "Саундары аяқталды"   # на казахском
+
+#: polls/templates/polls/no_permission.html:8
+msgid "You do not have permission to perform this action."
+msgstr "Бұл әрекетті орындауға сізде рұқсатыңыз жоқ."

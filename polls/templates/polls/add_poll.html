@@ -1,0 +1,517 @@
+{% extends 'base.html' %}
+{% load i18n static %}
+
+{% block body_class %}polls-add-page{% endblock %}
+
+{% block content %}
+<!-- Фоновая обёртка -->
+<div style="
+    background: url('{% static 'img/voting-pattern.png' %}') center center / cover no-repeat fixed;
+    min-height: 100vh;
+    padding: 2rem 0;
+">
+  <!-- Плавающий контейнер -->
+  <div class="container" style="
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+      background-color: rgba(255,255,255,0.9);
+      border-radius: 1rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  ">
+    <div class="row justify-content-center">
+      <div class="col-md-10 col-lg-8">
+        <h2 class="mb-4 text-center">{% trans "Create New Poll" %}</h2>
+
+        {% if messages %}
+          <div class="messages mb-3">
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="{% trans 'Close' %}">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <form method="post" novalidate id="poll-form">
+          {% csrf_token %}
+
+          <!-- Основная информация об опросе -->
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0"><i class="fas fa-question-circle"></i> {% trans "Poll Information" %}</h5>
+            </div>
+            <div class="card-body">
+              <div class="form-group mb-3">
+                {{ form.text.label_tag }}
+                {{ form.text }}
+                {% for err in form.text.errors %}
+                  <small class="text-danger d-block">{{ err }}</small>
+                {% endfor %}
+              </div>
+
+              <div class="form-group mb-3">
+                {{ form.description.label_tag }}
+                {{ form.description }}
+                {% for err in form.description.errors %}
+                  <small class="text-danger d-block">{{ err }}</small>
+                {% endfor %}
+              </div>
+
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="form-group mb-3">
+                    {{ form.end_date.label_tag }}
+                    {{ form.end_date }}
+                    {% for err in form.end_date.errors %}
+                      <small class="text-danger d-block">{{ err }}</small>
+                    {% endfor %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-check mb-3">
+                {{ form.is_quiz }}
+                {{ form.is_quiz.label_tag }}
+                <small class="form-text text-muted">{% trans "Check this if this is a quiz with correct answers" %}</small>
+                {% for err in form.is_quiz.errors %}
+                  <small class="text-danger d-block">{{ err }}</small>
+                {% endfor %}
+              </div>
+
+              <div class="form-check mb-3">
+                {{ form.is_multi_question }}
+                {{ form.is_multi_question.label_tag }}
+                <small class="form-text text-muted">{% trans "Check this if this poll has multiple questions" %}</small>
+                {% for err in form.is_multi_question.errors %}
+                  <small class="text-danger d-block">{{ err }}</small>
+                {% endfor %}
+              </div>
+
+              <div class="form-check mb-3">
+                {{ form.allow_discussion }}
+                {{ form.allow_discussion.label_tag }}
+                <small class="form-text text-muted">{% trans "Allow users to discuss this poll" %}</small>
+                {% for err in form.allow_discussion.errors %}
+                  <small class="text-danger d-block">{{ err }}</small>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <!-- Обычный опрос - варианты ответов -->
+          <div class="card mb-4" id="single-question-choices">
+            <div class="card-header">
+              <h5 class="mb-0"><i class="fas fa-list-ul"></i> {% trans "Answer Choices" %}</h5>
+            </div>
+            <div class="card-body">
+              <div id="choices-container">
+                
+                <div class="choice-row" data-choice-id="1" style="display: flex;">
+                    <div class="input-group mb-2">
+                        <span class="input-group-text">{% trans "Choice" %} 1</span>
+                        <input type="text" name="choice1" id="id_choice1" class="form-control" value="{{ form.choice1.value|default:'' }}">
+                        <div class="input-group-text correct-answer-wrapper" style="display: none;">
+                          <input type="checkbox" name="choice1_correct" id="id_choice1_correct" class="form-check-input mt-0" {% if form.choice1_correct.value %}checked{% endif %}>
+                          <label for="id_choice1_correct" class="ms-1 mb-0">{% trans "Correct" %}</label>
+                        </div>
+                        <button type="button" class="btn btn-outline-danger remove-choice-btn"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+
+                <div class="choice-row" data-choice-id="2" style="display: flex;">
+                    <div class="input-group mb-2">
+                        <span class="input-group-text">{% trans "Choice" %} 2</span>
+                        <input type="text" name="choice2" id="id_choice2" class="form-control" value="{{ form.choice2.value|default:'' }}">
+                        <div class="input-group-text correct-answer-wrapper" style="display: none;">
+                          <input type="checkbox" name="choice2_correct" id="id_choice2_correct" class="form-check-input mt-0" {% if form.choice2_correct.value %}checked{% endif %}>
+                          <label for="id_choice2_correct" class="ms-1 mb-0">{% trans "Correct" %}</label>
+                        </div>
+                        <button type="button" class="btn btn-outline-danger remove-choice-btn"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+
+                <div class="choice-row" data-choice-id="3" style="display: none;">
+                    <div class="input-group mb-2">
+                        <span class="input-group-text">{% trans "Choice" %} 3</span>
+                        <input type="text" name="choice3" id="id_choice3" class="form-control" value="{{ form.choice3.value|default:'' }}">
+                        <div class="input-group-text correct-answer-wrapper" style="display: none;">
+                          <input type="checkbox" name="choice3_correct" id="id_choice3_correct" class="form-check-input mt-0" {% if form.choice3_correct.value %}checked{% endif %}>
+                          <label for="id_choice3_correct" class="ms-1 mb-0">{% trans "Correct" %}</label>
+                        </div>
+                        <button type="button" class="btn btn-outline-danger remove-choice-btn"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+
+                <div class="choice-row" data-choice-id="4" style="display: none;">
+                    <div class="input-group mb-2">
+                        <span class="input-group-text">{% trans "Choice" %} 4</span>
+                        <input type="text" name="choice4" id="id_choice4" class="form-control" value="{{ form.choice4.value|default:'' }}">
+                        <div class="input-group-text correct-answer-wrapper" style="display: none;">
+                          <input type="checkbox" name="choice4_correct" id="id_choice4_correct" class="form-check-input mt-0" {% if form.choice4_correct.value %}checked{% endif %}>
+                          <label for="id_choice4_correct" class="ms-1 mb-0">{% trans "Correct" %}</label>
+                        </div>
+                        <button type="button" class="btn btn-outline-danger remove-choice-btn"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+
+                <div class="choice-row" data-choice-id="5" style="display: none;">
+                    <div class="input-group mb-2">
+                        <span class="input-group-text">{% trans "Choice" %} 5</span>
+                        <input type="text" name="choice5" id="id_choice5" class="form-control" value="{{ form.choice5.value|default:'' }}">
+                        <div class="input-group-text correct-answer-wrapper" style="display: none;">
+                          <input type="checkbox" name="choice5_correct" id="id_choice5_correct" class="form-check-input mt-0" {% if form.choice5_correct.value %}checked{% endif %}>
+                          <label for="id_choice5_correct" class="ms-1 mb-0">{% trans "Correct" %}</label>
+                        </div>
+                        <button type="button" class="btn btn-outline-danger remove-choice-btn"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+
+                <div class="choice-row" data-choice-id="6" style="display: none;">
+                    <div class="input-group mb-2">
+                        <span class="input-group-text">{% trans "Choice" %} 6</span>
+                        <input type="text" name="choice6" id="id_choice6" class="form-control" value="{{ form.choice6.value|default:'' }}">
+                        <div class="input-group-text correct-answer-wrapper" style="display: none;">
+                          <input type="checkbox" name="choice6_correct" id="id_choice6_correct" class="form-check-input mt-0" {% if form.choice6_correct.value %}checked{% endif %}>
+                          <label for="id_choice6_correct" class="ms-1 mb-0">{% trans "Correct" %}</label>
+                        </div>
+                        <button type="button" class="btn btn-outline-danger remove-choice-btn"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+
+                <div class="choice-row" data-choice-id="7" style="display: none;">
+                    <div class="input-group mb-2">
+                        <span class="input-group-text">{% trans "Choice" %} 7</span>
+                        <input type="text" name="choice7" id="id_choice7" class="form-control" value="{{ form.choice7.value|default:'' }}">
+                        <div class="input-group-text correct-answer-wrapper" style="display: none;">
+                          <input type="checkbox" name="choice7_correct" id="id_choice7_correct" class="form-check-input mt-0" {% if form.choice7_correct.value %}checked{% endif %}>
+                          <label for="id_choice7_correct" class="ms-1 mb-0">{% trans "Correct" %}</label>
+                        </div>
+                        <button type="button" class="btn btn-outline-danger remove-choice-btn"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+
+                <div class="choice-row" data-choice-id="8" style="display: none;">
+                    <div class="input-group mb-2">
+                        <span class="input-group-text">{% trans "Choice" %} 8</span>
+                        <input type="text" name="choice8" id="id_choice8" class="form-control" value="{{ form.choice8.value|default:'' }}">
+                        <div class="input-group-text correct-answer-wrapper" style="display: none;">
+                          <input type="checkbox" name="choice8_correct" id="id_choice8_correct" class="form-check-input mt-0" {% if form.choice8_correct.value %}checked{% endif %}>
+                          <label for="id_choice8_correct" class="ms-1 mb-0">{% trans "Correct" %}</label>
+                        </div>
+                        <button type="button" class="btn btn-outline-danger remove-choice-btn"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+
+                <div class="choice-row" data-choice-id="9" style="display: none;">
+                    <div class="input-group mb-2">
+                        <span class="input-group-text">{% trans "Choice" %} 9</span>
+                        <input type="text" name="choice9" id="id_choice9" class="form-control" value="{{ form.choice9.value|default:'' }}">
+                        <div class="input-group-text correct-answer-wrapper" style="display: none;">
+                          <input type="checkbox" name="choice9_correct" id="id_choice9_correct" class="form-check-input mt-0" {% if form.choice9_correct.value %}checked{% endif %}>
+                          <label for="id_choice9_correct" class="ms-1 mb-0">{% trans "Correct" %}</label>
+                        </div>
+                        <button type="button" class="btn btn-outline-danger remove-choice-btn"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+
+                <div class="choice-row" data-choice-id="10" style="display: none;">
+                    <div class="input-group mb-2">
+                        <span class="input-group-text">{% trans "Choice" %} 10</span>
+                        <input type="text" name="choice10" id="id_choice10" class="form-control" value="{{ form.choice10.value|default:'' }}">
+                        <div class="input-group-text correct-answer-wrapper" style="display: none;">
+                          <input type="checkbox" name="choice10_correct" id="id_choice10_correct" class="form-check-input mt-0" {% if form.choice10_correct.value %}checked{% endif %}>
+                          <label for="id_choice10_correct" class="ms-1 mb-0">{% trans "Correct" %}</label>
+                        </div>
+                        <button type="button" class="btn btn-outline-danger remove-choice-btn"><i class="fas fa-times"></i></button>
+                    </div>
+                </div>
+              </div>
+              <button type="button" id="add-choice-btn-single" class="btn btn-outline-primary">
+                <i class="fas fa-plus"></i> {% trans "Add Choice" %}
+              </button>
+            </div>
+          </div>
+
+          <!-- Многовопросный опрос -->
+          <div class="card mb-4" id="multi-question-section" style="display: none;">
+            <div class="card-header">
+              <h5 class="mb-0"><i class="fas fa-question-circle"></i> {% trans "Questions" %}</h5>
+            </div>
+            <div class="card-body">
+              {{ question_formset.management_form }}
+              <div id="questions-container">
+                <!-- Вопросы будут добавляться динамически -->
+              </div>
+              <button type="button" class="btn btn-outline-primary" id="add-question-btn">
+                <i class="fas fa-plus"></i> {% trans "Add Question" %}
+              </button>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between">
+            <button type="submit" class="btn btn-primary btn-lg">
+              <i class="fas fa-plus"></i> {% trans "Create Poll" %}
+            </button>
+            <a href="{% url 'polls:list' %}" class="btn btn-outline-secondary">
+              <i class="fas fa-arrow-left"></i> {% trans "Back" %}
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const isMultiQuestionCheckbox = document.getElementById('{{ form.is_multi_question.id_for_label }}');
+    const singleQuestionChoices = document.getElementById('single-question-choices');
+    const multiQuestionSection = document.getElementById('multi-question-section');
+    const questionsContainer = document.getElementById('questions-container');
+    const addQuestionBtn = document.getElementById('add-question-btn');
+    const isQuizCheckbox = document.getElementById('{{ form.is_quiz.id_for_label }}');
+    const choicesContainer = document.getElementById('choices-container');
+    const addChoiceBtnSingle = document.getElementById('add-choice-btn-single');
+
+    let questionCounter = 0;
+
+    function togglePollType() {
+        const isMultiQuestion = isMultiQuestionCheckbox.checked;
+        singleQuestionChoices.style.display = isMultiQuestion ? 'none' : 'block';
+        multiQuestionSection.style.display = isMultiQuestion ? 'block' : 'none';
+        
+        // Сброс, если мы переключаемся
+        if (isMultiQuestion && questionsContainer.children.length === 0) {
+            addQuestion();
+        }
+    }
+
+    function updateQuestionManagementForm() {
+        const totalFormsInput = document.getElementById('id_question_set-TOTAL_FORMS');
+        if (totalFormsInput) {
+            const questionBlocks = questionsContainer.querySelectorAll('.question-block');
+            totalFormsInput.value = questionBlocks.length;
+        }
+    }
+
+    function reindexQuestions() {
+        const questionBlocks = questionsContainer.querySelectorAll('.question-block');
+        questionBlocks.forEach((questionDiv, q_index) => {
+            // Обновляем заголовок вопроса и data-атрибуты
+            questionDiv.querySelector('h6').textContent = `{% trans "Question" %} ${q_index + 1}`;
+            questionDiv.querySelector('.remove-question').dataset.question = q_index;
+            questionDiv.querySelector('.add-choice-btn').dataset.question = q_index;
+            
+            // Обновляем все дочерние элементы (input, textarea, label)
+            const elementsToReindex = questionDiv.querySelectorAll('input, textarea, label');
+            elementsToReindex.forEach(el => {
+                for (const attr of ['id', 'name', 'for']) {
+                    if (el.hasAttribute(attr)) {
+                        let value = el.getAttribute(attr);
+                        // Заменяем индекс в полях формсета (напр., question_set-1-text)
+                        value = value.replace(/(question_set-)\d+(-)/, `$1${q_index}$2`);
+                        // Заменяем индекс в полях вариантов (напр., choices_1-0-text)
+                        value = value.replace(/(choices_)\d+(-)/, `$1${q_index}$2`);
+                        el.setAttribute(attr, value);
+                    }
+                }
+            });
+        });
+    }
+
+    function createQuestionForm(questionIndex) {
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'question-block card mb-3';
+        questionDiv.innerHTML = `
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">{% trans "Question" %} ${questionIndex + 1}</h6>
+                <button type="button" class="btn btn-sm btn-outline-danger remove-question" data-question="${questionIndex}">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+            <div class="card-body">
+                <div class="form-group mb-3">
+                    <label for="question_text_${questionIndex}">{% trans "Question Text" %}</label>
+                    <textarea name="question_set-${questionIndex}-text" id="question_text_${questionIndex}" class="form-control" rows="3" required></textarea>
+                </div>
+                <div class="form-group mb-3">
+                    <label for="question_order_${questionIndex}">{% trans "Order" %}</label>
+                    <input type="number" name="question_set-${questionIndex}-order" id="question_order_${questionIndex}" class="form-control" value="${questionIndex + 1}" min="1">
+                </div>
+                <div class="form-check mb-3">
+                    <input type="checkbox" name="question_set-${questionIndex}-is_required" id="question_required_${questionIndex}" class="form-check-input" checked>
+                    <label for="question_required_${questionIndex}" class="form-check-label">{% trans "Required" %}</label>
+                </div>
+                <div class="choices-section">
+                    <h6>{% trans "Answer Choices" %}</h6>
+                    <div class="choices-container" id="choices_${questionIndex}">
+                        <!-- Варианты ответов будут добавляться здесь -->
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-primary add-choice-btn" data-question="${questionIndex}">
+                        <i class="fas fa-plus"></i> {% trans "Add Choice" %}
+                    </button>
+                </div>
+            </div>
+        `;
+
+        // Добавляем начальные варианты ответов
+        const choicesContainer = questionDiv.querySelector('.choices-container');
+        for (let i = 0; i < 2; i++) {
+            addChoiceToQuestion(choicesContainer, questionIndex, i);
+        }
+
+        return questionDiv;
+    }
+
+    function addChoiceToQuestion(container, questionIndex, choiceIndex) {
+        const choiceDiv = document.createElement('div');
+        choiceDiv.className = 'choice-row mb-2 d-flex align-items-center';
+        choiceDiv.innerHTML = `
+            <div class="flex-grow-1 mr-2">
+                <input type="text" name="choices_${questionIndex}-${choiceIndex}-choice_text" class="form-control" placeholder="{% trans 'Choice text' %}" required>
+            </div>
+            <div class="mr-2">
+                <input type="number" name="choices_${questionIndex}-${choiceIndex}-order" class="form-control" value="${choiceIndex + 1}" min="1" style="width: 80px;">
+            </div>
+            <div class="mr-2">
+                <input type="checkbox" name="choices_${questionIndex}-${choiceIndex}-is_correct" class="form-check-input">
+                <label class="form-check-label">{% trans "Correct" %}</label>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-danger remove-choice">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        container.appendChild(choiceDiv);
+    }
+
+    function addQuestion() {
+        const questionBlocks = questionsContainer.querySelectorAll('.question-block');
+        const newIndex = questionBlocks.length;
+        const questionForm = createQuestionForm(newIndex);
+        questionsContainer.appendChild(questionForm);
+        updateQuestionManagementForm();
+    }
+
+    // Event listeners
+    if (isMultiQuestionCheckbox) {
+        isMultiQuestionCheckbox.addEventListener('change', togglePollType);
+    }
+
+    if (addQuestionBtn) {
+        addQuestionBtn.addEventListener('click', addQuestion);
+    }
+
+    function reindexChoices(choicesContainer, questionIndex) {
+        const choiceRows = choicesContainer.querySelectorAll('.choice-row');
+        choiceRows.forEach((choiceRow, choiceIndex) => {
+            const textInput = choiceRow.querySelector('input[name*="choice_text"]');
+            if(textInput) textInput.name = `choices_${questionIndex}-${choiceIndex}-choice_text`;
+
+            const orderInput = choiceRow.querySelector('input[name*="order"]');
+            if(orderInput) orderInput.name = `choices_${questionIndex}-${choiceIndex}-order`;
+
+            const correctInput = choiceRow.querySelector('input[name*="is_correct"]');
+            if(correctInput) correctInput.name = `choices_${questionIndex}-${choiceIndex}-is_correct`;
+        });
+    }
+
+    // Делегирование событий для динамически созданных элементов
+    questionsContainer.addEventListener('click', function(e) {
+        if (e.target.closest('.remove-question')) {
+            e.target.closest('.question-block').remove();
+            reindexQuestions();
+            updateQuestionManagementForm();
+        }
+        if (e.target.closest('.add-choice-btn')) {
+            const questionIndex = e.target.closest('.add-choice-btn').dataset.question;
+            const choicesContainer = e.target.closest('.question-block').querySelector('.choices-container');
+            const choiceCount = choicesContainer.children.length;
+            addChoiceToQuestion(choicesContainer, questionIndex, choiceCount);
+        }
+        if (e.target.closest('.remove-choice')) {
+            const questionBlock = e.target.closest('.question-block');
+            const questionIndex = questionBlock.querySelector('.add-choice-btn').dataset.question;
+            const choicesContainer = questionBlock.querySelector('.choices-container');
+            e.target.closest('.choice-row').remove();
+            reindexChoices(choicesContainer, questionIndex);
+        }
+    });
+
+    // Инициализация
+    togglePollType();
+    if (isMultiQuestionCheckbox && isMultiQuestionCheckbox.checked) {
+       if (questionsContainer.children.length === 0) {
+            addQuestion(); // Добавляем первый вопрос
+       }
+    }
+
+    // --- Обработка обычного опроса ---
+    
+    function updateSinglePollChoices() {
+        const choiceRows = choicesContainer.querySelectorAll('.choice-row');
+        let visibleChoices = 0;
+        choiceRows.forEach(row => {
+            if (row.style.display !== 'none') {
+                visibleChoices++;
+            }
+        });
+
+        // Кнопка удаления
+        choiceRows.forEach(row => {
+            const removeBtn = row.querySelector('.remove-choice-btn');
+            if (removeBtn) {
+                removeBtn.style.display = visibleChoices > 2 ? 'block' : 'none';
+            }
+        });
+        
+        // Кнопка добавления
+        addChoiceBtnSingle.style.display = visibleChoices < 10 ? 'block' : 'none';
+    }
+
+    function toggleCorrectCheckboxes() {
+        const isQuiz = isQuizCheckbox.checked;
+        const correctWrappers = singleQuestionChoices.querySelectorAll('.correct-answer-wrapper');
+        correctWrappers.forEach(wrapper => {
+            wrapper.style.display = isQuiz ? 'flex' : 'none';
+        });
+    }
+    
+    addChoiceBtnSingle.addEventListener('click', function() {
+        const firstHidden = choicesContainer.querySelector('.choice-row[style*="display: none"]');
+        if (firstHidden) {
+            firstHidden.style.display = 'flex';
+            updateSinglePollChoices();
+        }
+    });
+
+    choicesContainer.addEventListener('click', function(e) {
+        const removeBtn = e.target.closest('.remove-choice-btn');
+        if (removeBtn) {
+            const choiceRow = removeBtn.closest('.choice-row');
+            choiceRow.style.display = 'none';
+            const input = choiceRow.querySelector('input[type="text"]');
+            if (input) input.value = '';
+            const checkbox = choiceRow.querySelector('input[type="checkbox"]');
+            if (checkbox) checkbox.checked = false;
+            updateSinglePollChoices();
+        }
+    });
+
+    if (isQuizCheckbox) {
+        isQuizCheckbox.addEventListener('change', toggleCorrectCheckboxes);
+    }
+
+    // Initial setup
+    updateSinglePollChoices();
+    toggleCorrectCheckboxes();
+});
+</script>
+{% endblock %}
+
+
+
+

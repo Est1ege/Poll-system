@@ -1,0 +1,371 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% trans "Manage Access" %} - {{ poll.text }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Заголовок управления доступом -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        {% trans "Manage Poll Access" %}
+                    </h3>
+                    <p class="text-muted mb-0">{{ poll.text }}</p>
+                </div>
+            </div>
+
+            <!-- Текущие настройки доступа -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-cog me-2"></i>
+                        {% trans "Current Access Settings" %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>{% trans "Visibility" %}:</strong> 
+                                <span class="badge bg-{% if poll.visibility == 'public' %}success{% elif poll.visibility == 'private' %}warning{% else %}info{% endif %}">
+                                    {{ poll.get_visibility_display }}
+                                </span>
+                            </p>
+                            <p><strong>{% trans "Vote Type" %}:</strong> 
+                                <span class="badge bg-primary">{{ poll.get_vote_type_display }}</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>{% trans "End Date" %}:</strong> 
+                                {% if poll.end_date %}
+                                    {{ poll.end_date|date:"d.m.Y H:i" }}
+                                {% else %}
+                                    <span class="text-muted">{% trans "No end date" %}</span>
+                                {% endif %}
+                            </p>
+                            <p><strong>{% trans "Allow Change Vote" %}:</strong> 
+                                <span class="badge bg-{% if poll.allow_change_vote %}success{% else %}secondary{% endif %}">
+                                    {% if poll.allow_change_vote %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Форма управления доступом -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-users me-2"></i>
+                        {% trans "Access Control" %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-8">
+                                {{ form|crispy }}
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title">{% trans "Access Options" %}</h6>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="require_authentication" name="require_authentication" checked>
+                                            <label class="form-check-label" for="require_authentication">
+                                                {% trans "Require authentication" %}
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="allow_anonymous" name="allow_anonymous">
+                                            <label class="form-check-label" for="allow_anonymous">
+                                                {% trans "Allow anonymous votes" %}
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="restrict_by_department" name="restrict_by_department">
+                                            <label class="form-check-label" for="restrict_by_department">
+                                                {% trans "Restrict by department" %}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>
+                                {% trans "Save Access Settings" %}
+                            </button>
+                            <a href="{% url 'polls:detail' poll.slug %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                {% trans "Back to Poll" %}
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Список пользователей с доступом -->
+            {% if poll_access_list %}
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-user-check me-2"></i>
+                            {% trans "Users with Access" %}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>{% trans "User" %}</th>
+                                        <th>{% trans "Access Level" %}</th>
+                                        <th>{% trans "Granted" %}</th>
+                                        <th>{% trans "Actions" %}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for access in poll_access_list %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    {% if access.user.userprofile.avatar %}
+                                                        <img src="{{ access.user.userprofile.avatar.url }}" 
+                                                             class="rounded-circle me-2" width="32" height="32" alt="Avatar">
+                                                    {% else %}
+                                                        <div class="bg-secondary rounded-circle me-2 d-flex align-items-center justify-content-center" 
+                                                             style="width: 32px; height: 32px;">
+                                                            <i class="fas fa-user text-white"></i>
+                                                        </div>
+                                                    {% endif %}
+                                                    <div>
+                                                        <strong>{{ access.user.get_full_name|default:access.user.username }}</strong>
+                                                        <br>
+                                                        <small class="text-muted">{{ access.user.email }}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-{% if access.access_level == 'full' %}success{% elif access.access_level == 'read' %}info{% else %}warning{% endif %}">
+                                                    {{ access.get_access_level_display }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">{{ access.granted_at|date:"d.m.Y H:i" }}</small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <button type="button" class="btn btn-sm btn-outline-primary" 
+                                                            onclick="editAccess({{ access.id }})">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                            onclick="removeAccess({{ access.id }})">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Боковая панель -->
+        <div class="col-md-4">
+            <!-- Информация о голосовании -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        {% trans "Poll Information" %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>{% trans "Owner" %}:</strong> {{ poll.owner.get_full_name|default:poll.owner.username }}</p>
+                    <p><strong>{% trans "Created" %}:</strong> {{ poll.pub_date|date:"d.m.Y H:i" }}</p>
+                    <p><strong>{% trans "Total Votes" %}:</strong> {{ poll.vote_set.count }}</p>
+                    <p><strong>{% trans "Unique Voters" %}:</strong> {{ unique_voters }}</p>
+                    {% if poll.end_date %}
+                        <p><strong>{% trans "Status" %}:</strong> 
+                            <span class="badge bg-{% if poll.is_active %}success{% else %}secondary{% endif %}">
+                                {% if poll.is_active %}{% trans "Active" %}{% else %}{% trans "Ended" %}{% endif %}
+                            </span>
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Быстрые действия -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-bolt me-2"></i>
+                        {% trans "Quick Actions" %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'polls:detail' poll.slug %}" class="btn btn-outline-primary">
+                            <i class="fas fa-eye me-2"></i>
+                            {% trans "View Poll" %}
+                        </a>
+                        <a href="{% url 'polls:edit' poll.slug %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-edit me-2"></i>
+                            {% trans "Edit Poll" %}
+                        </a>
+                        <a href="{% url 'polls:analytics' poll.slug %}" class="btn btn-outline-info">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            {% trans "Analytics" %}
+                        </a>
+                        <a href="{% url 'polls:invite' poll.slug %}" class="btn btn-outline-success">
+                            <i class="fas fa-envelope me-2"></i>
+                            {% trans "Invite Users" %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Настройки доступа -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        {% trans "Access Settings" %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">{% trans "Current Visibility" %}</label>
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-{% if poll.visibility == 'public' %}success{% elif poll.visibility == 'private' %}warning{% else %}info{% endif %} me-2">
+                                {{ poll.get_visibility_display }}
+                            </span>
+                            <small class="text-muted">
+                                {% if poll.visibility == 'public' %}
+                                    {% trans "Anyone can view and vote" %}
+                                {% elif poll.visibility == 'private' %}
+                                    {% trans "Only invited users can access" %}
+                                {% else %}
+                                    {% trans "Only specific users have access" %}
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">{% trans "Vote Type" %}</label>
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-primary me-2">{{ poll.get_vote_type_display }}</span>
+                            <small class="text-muted">
+                                {% if poll.vote_type == 'single' %}
+                                    {% trans "One vote per user" %}
+                                {% else %}
+                                    {% trans "Multiple votes allowed" %}
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+
+                    {% if poll.end_date %}
+                        <div class="mb-3">
+                            <label class="form-label">{% trans "End Date" %}</label>
+                            <p class="mb-0">{{ poll.end_date|date:"d.m.Y H:i" }}</p>
+                        </div>
+                    {% endif %}
+
+                    <div class="d-grid">
+                        <a href="{% url 'polls:edit' poll.slug %}" class="btn btn-primary">
+                            <i class="fas fa-cog me-2"></i>
+                            {% trans "Change Settings" %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальные окна для редактирования и удаления доступа -->
+<div class="modal fade" id="editAccessModal" tabindex="-1" aria-labelledby="editAccessModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="editAccessForm" method="post">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="editAccessModalLabel">{% trans "Edit Access" %}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Close' %}"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Здесь будет динамически подгружаться форма редактирования доступа -->
+          <div id="editAccessFormBody"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+          <button type="submit" class="btn btn-primary">{% trans "Save changes" %}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="removeAccessModal" tabindex="-1" aria-labelledby="removeAccessModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="removeAccessForm" method="post">
+        {% csrf_token %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="removeAccessModalLabel">{% trans "Remove Access" %}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{% trans 'Close' %}"></button>
+        </div>
+        <div class="modal-body">
+          <p>{% trans "Are you sure you want to remove access for this user?" %}</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+          <button type="submit" class="btn btn-danger">{% trans "Remove" %}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- JS для работы с модальными окнами -->
+<script>
+function editAccess(accessId) {
+    // Здесь должен быть AJAX-запрос для получения формы редактирования доступа
+    // и отображения модального окна
+    // Пример:
+    // fetch(`/polls/access/edit/${accessId}/`)
+    //   .then(response => response.text())
+    //   .then(html => {
+    //     document.getElementById('editAccessFormBody').innerHTML = html;
+    //     var editModal = new bootstrap.Modal(document.getElementById('editAccessModal'));
+    //     editModal.show();
+    //   });
+    alert('Функция редактирования доступа пока не реализована.');
+}
+
+function removeAccess(accessId) {
+    // Здесь должен быть AJAX-запрос для удаления доступа
+    // и отображения модального окна подтверждения
+    // Пример:
+    // document.getElementById('removeAccessForm').action = `/polls/access/remove/${accessId}/`;
+    // var removeModal = new bootstrap.Modal(document.getElementById('removeAccessModal'));
+    // removeModal.show();
+    alert('Функция удаления доступа пока не реализована.');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% load i18n static %}
+
+{% block body_class %}polls-add-choice-page{% endblock %}
+
+{% block content %}
+<!-- Фон и центрированный контейнер -->
+<div style="
+    background: url('{% static 'img/voting-pattern.png' %}') center center / cover no-repeat fixed;
+    min-height: 100vh;
+    padding: 2rem 0;
+">
+  <div class="container" style="
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 2rem;
+      background-color: rgba(255,255,255,0.9);
+      border-radius: 1rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  ">
+    <div class="row justify-content-center">
+      <div class="col-12">
+        {% if edit_choice %}
+          <h2 class="mb-4 text-center">{% trans "Update choice" %}</h2>
+        {% else %}
+          <h2 class="mb-4 text-center">{% trans "Add new choice" %}</h2>
+        {% endif %}
+
+        {% if messages %}
+          <div class="mb-4">
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }}" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="{% trans 'Close' %}">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <div class="form-group mb-3">
+            {{ form.choice_text.label_tag }}
+            {{ form.choice_text }}
+            {% for err in form.choice_text.errors %}
+              <small class="text-danger d-block">{{ err }}</small>
+            {% endfor %}
+          </div>
+
+          <div class="form-check mb-4">
+            {{ form.is_correct }}
+            {{ form.is_correct.label_tag }}
+            {% for err in form.is_correct.errors %}
+              <small class="text-danger d-block">{{ err }}</small>
+            {% endfor %}
+          </div>
+
+          <div class="d-flex flex-wrap justify-content-center">
+            <button type="submit" class="btn btn-primary mr-3 mb-2">
+              {% if edit_choice %}
+                {% trans "Update" %}
+              {% else %}
+                {% trans "Add" %}
+              {% endif %}
+            </button>
+
+            {% if edit_choice %}
+              <a href="{% url 'polls:choice_delete' choice.id %}"
+                 class="btn btn-danger mb-2"
+                 onclick="return confirm('{% trans "Are you sure you want to delete this choice?" %}')">
+                {% trans "Delete" %}
+              </a>
+            {% endif %}
+
+            {# Отмена возвращает на страницу редактирования опроса по slug #}
+            <a href="{% url 'polls:edit' poll.slug %}"
+               class="btn btn-secondary ml-2 mb-2">
+              {% trans "Cancel" %}
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+

@@ -1,0 +1,315 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Analytics" %} - {{ poll.text }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <!-- Заголовок аналитики -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        {% trans "Poll Analytics" %}
+                    </h3>
+                    <p class="text-muted mb-0">{{ poll.text }}</p>
+                </div>
+            </div>
+
+            <!-- Основная статистика -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary">{{ total_votes }}</h5>
+                            <p class="card-text">{% trans "Total Votes" %}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title text-success">{{ unique_voters }}</h5>
+                            <p class="card-text">{% trans "Unique Voters" %}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title text-info">{{ poll.choices.count }}</h5>
+                            <p class="card-text">{% trans "Choices" %}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title text-warning">{{ participation_rate|floatformat:1 }}%</h5>
+                            <p class="card-text">{% trans "Participation Rate" %}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Графики -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-chart-pie me-2"></i>
+                                {% trans "Vote Distribution" %}
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="voteChart" width="400" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-chart-line me-2"></i>
+                                {% trans "Voting Timeline" %}
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="timelineChart" width="400" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Детальная статистика по вариантам -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        {% trans "Choice Statistics" %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Choice" %}</th>
+                                    <th>{% trans "Votes" %}</th>
+                                    <th>{% trans "Percentage" %}</th>
+                                    <th>{% trans "Bar" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for choice in choices_data %}
+                                <tr>
+                                    <td>{{ choice.text }}</td>
+                                    <td>{{ choice.votes }}</td>
+                                    <td>{{ choice.percentage|floatformat:1 }}%</td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: {{ choice.percentage }}%; background-color: {{ choice.color }};"
+                                                 aria-valuenow="{{ choice.percentage }}" 
+                                                 aria-valuemin="0" aria-valuemax="100">
+                                                {{ choice.percentage|floatformat:1 }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Демографическая информация -->
+            {% if demographic_data %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-users me-2"></i>
+                        {% trans "Demographics" %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>{% trans "Voters by Department" %}</h6>
+                            <canvas id="departmentChart" width="300" height="200"></canvas>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>{% trans "Voters by User Type" %}</h6>
+                            <canvas id="userTypeChart" width="300" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Экспорт данных -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-download me-2"></i>
+                        {% trans "Export Data" %}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <a href="{% url 'polls:export' poll.slug %}?format=csv" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-file-csv me-2"></i>
+                                {% trans "Export as CSV" %}
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'polls:export' poll.slug %}?format=excel" class="btn btn-outline-success w-100">
+                                <i class="fas fa-file-excel me-2"></i>
+                                {% trans "Export as Excel" %}
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'polls:export' poll.slug %}?format=pdf" class="btn btn-outline-danger w-100">
+                                <i class="fas fa-file-pdf me-2"></i>
+                                {% trans "Export as PDF" %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Данные для графиков
+const voteData = {
+    labels: {{ choices_labels|safe }},
+    datasets: [{
+        data: {{ choices_votes|safe }},
+        backgroundColor: {{ choices_colors|safe }},
+        borderWidth: 2,
+        borderColor: '#fff'
+    }]
+};
+
+const timelineData = {
+    labels: {{ timeline_labels|safe }},
+    datasets: [{
+        label: '{% trans "Votes" %}',
+        data: {{ timeline_votes|safe }},
+        borderColor: 'rgb(75, 192, 192)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        tension: 0.1
+    }]
+};
+
+// Создание круговой диаграммы
+const voteChart = new Chart(document.getElementById('voteChart'), {
+    type: 'doughnut',
+    data: voteData,
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Создание линейного графика
+const timelineChart = new Chart(document.getElementById('timelineChart'), {
+    type: 'line',
+    data: timelineData,
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        }
+    }
+});
+
+{% if demographic_data %}
+// Демографические графики
+const departmentData = {
+    labels: {{ department_labels|safe }},
+    datasets: [{
+        data: {{ department_counts|safe }},
+        backgroundColor: [
+            'rgba(255, 99, 132, 0.8)',
+            'rgba(54, 162, 235, 0.8)',
+            'rgba(255, 206, 86, 0.8)',
+            'rgba(75, 192, 192, 0.8)',
+            'rgba(153, 102, 255, 0.8)',
+            'rgba(255, 159, 64, 0.8)',
+            'rgba(199, 199, 199, 0.8)',
+            'rgba(83, 102, 255, 0.8)'
+        ],
+        borderWidth: 2,
+        borderColor: '#fff'
+    }]
+};
+
+const userTypeData = {
+    labels: {{ user_type_labels|safe }},
+    datasets: [{
+        data: {{ user_type_counts|safe }},
+        backgroundColor: [
+            'rgba(255, 99, 132, 0.8)',
+            'rgba(54, 162, 235, 0.8)',
+            'rgba(255, 206, 86, 0.8)',
+            'rgba(75, 192, 192, 0.8)'
+        ],
+        borderWidth: 2,
+        borderColor: '#fff'
+    }]
+};
+
+// Создание демографических графиков
+const departmentChart = new Chart(document.getElementById('departmentChart'), {
+    type: 'pie',
+    data: departmentData,
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            },
+            title: {
+                display: true,
+                text: '{% trans "Votes by Department" %}'
+            }
+        }
+    }
+});
+
+const userTypeChart = new Chart(document.getElementById('userTypeChart'), {
+    type: 'doughnut',
+    data: userTypeData,
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            },
+            title: {
+                display: true,
+                text: '{% trans "Votes by User Type" %}'
+            }
+        }
+    }
+});
+{% endif %}
+

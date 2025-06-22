@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load i18n static %}
+
+{% block body_class %}polls-results-page{% endblock %}
+
+{% block content %}
+<!-- Фон и центрированный контейнер -->
+<div style="
+    background: url('{% static 'img/voting-pattern.png' %}') center center / cover no-repeat fixed;
+    min-height: 100vh;
+    padding: 2rem 0;
+">
+  <div class="container" style="
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+      background-color: rgba(255,255,255,0.85);
+      border-radius: 1rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  ">
+    {% if messages %}
+      <div class="mb-4">
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="{% trans 'Close' %}">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="row">
+      <div class="col-md-8 offset-sm-2">
+
+        {# Если это викторина и пользователь уже ответил, показываем результат правильности #}
+        {% if poll.is_quiz and selected %}
+          {% if is_correct %}
+            <div class="alert alert-success">
+              {% trans "Correct! Well done." %}
+            </div>
+          {% else %}
+            <div class="alert alert-danger">
+              {% trans "Incorrect. The correct answer was:" %}
+              <strong>
+                {% for c in poll.choice_set.all %}
+                  {% if c.is_correct %}{{ c.choice_text }}{% endif %}
+                {% endfor %}
+              </strong>
+            </div>
+          {% endif %}
+        {% endif %}
+
+        {# Заголовок результатов или окончания опроса #}
+        {% if poll.active %}
+          <h3 class="mt-3 mb-3 text-center">
+            {% blocktrans with text=poll.text %}Results for: {{ text }}{% endblocktrans %}
+          </h3>
+        {% else %}
+          <h3 class="mt-3 mb-3 text-center">
+            {% blocktrans with text=poll.text %}"{{ text }}" polling has ended!{% endblocktrans %}
+          </h3>
+        {% endif %}
+
+        {# Общее число голосов #}
+        <h4 class="mb-2 text-center">
+          {% blocktrans with total=poll.get_vote_count %}Total votes: {{ total }}{% endblocktrans %}
+        </h4>
+
+        {# Графическое отображение распределения голосов #}
+        <div class="progress mt-3 mb-4" style="height: 1.5rem;">
+          {% for choice in poll.get_result_dict %}
+            <div
+              class="progress-bar bg-{{ choice.alert_class }}"
+              role="progressbar"
+              style="width: {{ choice.percentage }}%;"
+              aria-valuenow="{{ choice.percentage }}"
+              aria-valuemin="0"
+              aria-valuemax="100"
+            >
+              <strong>{{ choice.text|truncatewords:3 }} – {{ choice.percentage|floatformat:1 }}%</strong>
+            </div>
+          {% endfor %}
+        </div>
+
+        {# Список вариантов с числом голосов #}
+        <ul class="list-group mb-4">
+          {% for choice in poll.choice_set.all %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              {{ choice.choice_text }}
+              <span class="badge badge-primary badge-pill">{{ choice.get_vote_count }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+
+        {# Кнопка возврата к списку #}
+        <div class="text-center">
+          <a class="btn btn-secondary" href="{% url 'polls:list' %}">
+            {% trans "Back to Polls" %}
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+
+
+

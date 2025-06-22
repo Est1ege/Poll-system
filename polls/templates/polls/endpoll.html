@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load i18n static %}
+
+{% block body_class %}polls-ended-page{% endblock %}
+
+{% block content %}
+<!-- Фоновая обёртка -->
+<div style="
+    background: url('{% static 'img/voting-pattern.png' %}') center center / cover no-repeat fixed;
+    min-height: 100vh;
+    padding: 2rem 0;
+">
+  <div class="container" style="
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+      background-color: rgba(255,255,255,0.85);
+      border-radius: 1rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  ">
+    {% if messages %}
+      <div class="mb-4">
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="{% trans 'Close' %}">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <h3 class="mt-3 mb-3 text-center">
+      {% blocktrans %}Results for: {{ poll.text }}{% endblocktrans %}
+    </h3>
+
+    <div class="progress mt-3 mb-4" style="height: 1.5rem;">
+      {% for choice in poll.get_result_dict %}
+        <div
+          class="progress-bar bg-{{ choice.alert_class }}"
+          role="progressbar"
+          style="width: {{ choice.percentage }}%;"
+          aria-valuenow="{{ choice.percentage|floatformat }}"
+          aria-valuemin="0"
+          aria-valuemax="100"
+        >
+          <strong>
+            {% blocktrans with name=choice.text percent=choice.percentage|floatformat:"1" %}
+              {{ name }} — {{ percent }}%
+            {% endblocktrans %}
+          </strong>
+        </div>
+      {% endfor %}
+    </div>
+
+    <ul class="list-group mb-4">
+      {% for choice in poll.choice_set.all %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          {{ choice.choice_text }}
+          <span class="badge badge-primary badge-pill">{{ choice.get_vote_count }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <div class="text-center">
+      <a href="{% url 'polls:list' %}" class="btn btn-secondary mr-2">
+        {% trans "Back to Polls" %}
+      </a>
+      <a href="{% url 'polls:results' poll.slug %}" class="btn btn-primary">
+        {% trans "View Results" %}
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

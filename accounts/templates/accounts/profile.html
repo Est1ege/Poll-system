@@ -1,0 +1,269 @@
+{% extends 'base.html' %}
+{% load static i18n %}
+
+{% block custom_css %}
+<link href="{% static 'css/auth.css' %}" rel="stylesheet">
+<style>
+.profile-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.profile-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.profile-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f8f9fa;
+}
+
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    color: white;
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+.profile-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.info-item {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 10px;
+    border-left: 4px solid #667eea;
+}
+
+.info-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.info-value {
+    color: #212529;
+    font-size: 1.1rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.action-btn {
+    padding: 1rem;
+    border: none;
+    border-radius: 10px;
+    text-decoration: none;
+    text-align: center;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: block;
+}
+
+.btn-primary-custom {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-primary-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    color: white;
+}
+
+.btn-secondary-custom {
+    background: #f8f9fa;
+    color: #495057;
+    border: 2px solid #dee2e6;
+}
+
+.btn-secondary-custom:hover {
+    background: #e9ecef;
+    color: #495057;
+    transform: translateY(-2px);
+}
+
+.recent-polls {
+    margin-top: 2rem;
+}
+
+.poll-item {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    border-left: 4px solid #667eea;
+}
+
+.poll-title {
+    font-weight: 600;
+    color: #212529;
+    margin-bottom: 0.5rem;
+}
+
+.poll-meta {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+@media (max-width: 768px) {
+    .profile-container {
+        margin: 1rem auto;
+    }
+    
+    .profile-card {
+        padding: 1.5rem;
+    }
+    
+    .profile-info {
+        grid-template-columns: 1fr;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .actions-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-card">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                {{ user.username|first|upper }}
+            </div>
+            <h2 class="text-primary">{% trans "Personal Account" %}</h2>
+            <p class="text-muted">{% trans "Welcome back" %}, {{ user.username }}!</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number">{{ user_polls_count }}</div>
+                <div class="stat-label">{% trans "My Polls" %}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ total_votes_received }}</div>
+                <div class="stat-label">{% trans "Total Votes" %}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ user_votes_count }}</div>
+                <div class="stat-label">{% trans "Votes Given" %}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ days_registered }}</div>
+                <div class="stat-label">{% trans "Days Registered" %}</div>
+            </div>
+        </div>
+
+        <div class="profile-info">
+            <div class="info-item">
+                <div class="info-label">{% trans "Username" %}</div>
+                <div class="info-value">{{ user.username }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">{% trans "Email" %}</div>
+                <div class="info-value">{{ user.email }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">{% trans "Date Joined" %}</div>
+                <div class="info-value">{{ user.date_joined|date:"d.m.Y" }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">{% trans "Last Login" %}</div>
+                <div class="info-value">{{ user.last_login|date:"d.m.Y H:i"|default:"Never" }}</div>
+            </div>
+        </div>
+
+        <div class="actions-grid">
+            <a href="{% url 'polls:add' %}" class="action-btn btn-primary-custom">
+                <i class="fas fa-plus"></i> {% trans "Create New Poll" %}
+            </a>
+            <a href="{% url 'polls:list_by_user' %}" class="action-btn btn-secondary-custom">
+                <i class="fas fa-list"></i> {% trans "My Polls" %}
+            </a>
+            <a href="{% url 'polls:list' %}" class="action-btn btn-secondary-custom">
+                <i class="fas fa-poll"></i> {% trans "All Polls" %}
+            </a>
+            <a href="{% url 'accounts:logout' %}" class="action-btn btn-secondary-custom">
+                <i class="fas fa-sign-out-alt"></i> {% trans "Logout" %}
+            </a>
+        </div>
+
+        {% if recent_polls %}
+        <div class="recent-polls">
+            <h4 class="text-primary mb-3">{% trans "Recent Polls" %}</h4>
+            {% for poll in recent_polls %}
+            <div class="poll-item">
+                <div class="poll-title">
+                    <a href="{% url 'polls:detail' poll.slug %}" class="text-decoration-none">
+                        {{ poll.text }}
+                    </a>
+                </div>
+                <div class="poll-meta">
+                    {% trans "Created" %}: {{ poll.pub_date|date:"d.m.Y" }} | 
+                    {% trans "Votes" %}: {{ poll.get_vote_count }} |
+                    {% if poll.active %}
+                        <span class="text-success">{% trans "Active" %}</span>
+                    {% else %}
+                        <span class="text-secondary">{% trans "Closed" %}</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

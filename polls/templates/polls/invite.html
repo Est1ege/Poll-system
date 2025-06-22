@@ -1,0 +1,170 @@
+
+{% extends 'base.html' %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% trans "Invite to Poll" %} - {{ poll.text }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">
+                        <i class="fas fa-envelope me-2"></i>
+                        {% trans "Invite Participants to Poll" %}
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5>{% trans "Poll Details" %}</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>{% trans "Question" %}:</strong> {{ poll.text }}</p>
+                                <p><strong>{% trans "Owner" %}:</strong> {{ poll.owner.get_full_name|default:poll.owner.username }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>{% trans "Created" %}:</strong> {{ poll.pub_date|date:"d.m.Y H:i" }}</p>
+                                {% if poll.end_date %}
+                                    <p><strong>{% trans "End Date" %}:</strong> {{ poll.end_date|date:"d.m.Y H:i" }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-md-8">
+                                {{ form|crispy }}
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body">
+                                        <h6 class="card-title">{% trans "Invitation Options" %}</h6>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="send_email" name="send_email" checked>
+                                            <label class="form-check-label" for="send_email">
+                                                {% trans "Send email invitation" %}
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="copy_link" name="copy_link">
+                                            <label class="form-check-label" for="copy_link">
+                                                {% trans "Copy invitation link" %}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                {% trans "Send Invitations" %}
+                            </button>
+                            <a href="{% url 'polls:detail' poll.slug %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                {% trans "Back to Poll" %}
+                            </a>
+                        </div>
+                    </form>
+
+                    {% if invitations %}
+                    <div class="mt-5">
+                        <h5>{% trans "Recent Invitations" %}</h5>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>{% trans "Email" %}</th>
+                                        <th>{% trans "Status" %}</th>
+                                        <th>{% trans "Sent Date" %}</th>
+                                        <th>{% trans "Actions" %}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for invitation in invitations %}
+                                    <tr>
+                                        <td>{{ invitation.email }}</td>
+                                        <td>
+                                            {% if invitation.is_accepted %}
+                                                <span class="badge bg-success">{% trans "Accepted" %}</span>
+                                            {% elif invitation.is_expired %}
+                                                <span class="badge bg-danger">{% trans "Expired" %}</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">{% trans "Pending" %}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ invitation.created_at|date:"d.m.Y H:i" }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" 
+                                                    onclick="copyInvitationLink('{{ invitation.token }}')">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-danger" 
+                                                    onclick="resendInvitation({{ invitation.id }})">
+                                                <i class="fas fa-redo"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyInvitationLink(token) {
+    const link = `${window.location.origin}{% url 'polls:detail' poll.slug %}?token=${token}`;
+    navigator.clipboard.writeText(link).then(function() {
+        // Показать уведомление об успешном копировании
+        const toast = document.createElement('div');
+        toast.className = 'toast position-fixed top-0 end-0 m-3';
+        toast.innerHTML = `
+            <div class="toast-header">
+                <strong class="me-auto">{% trans "Success" %}</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body">
+                {% trans "Invitation link copied to clipboard" %}
+            </div>
+        `;
+        document.body.appendChild(toast);
+        const bsToast = new bootstrap.Toast(toast);
+        bsToast.show();
+        
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 3000);
+    });
+}
+
+function resendInvitation(invitationId) {
+    if (confirm('{% trans "Are you sure you want to resend this invitation?" %}')) {
+        fetch(`/polls/invite/resend/${invitationId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('{% trans "Error resending invitation" %}');
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

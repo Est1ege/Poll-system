@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% load i18n static %}
+
+{% block body_class %}polls-edit-page{% endblock %}
+
+{% block content %}
+<!-- Фон и центрированный контейнер -->
+<div style="
+    background: url('{% static 'img/voting-pattern.png' %}') center center / cover no-repeat fixed;
+    min-height: 100vh;
+    padding: 2rem 0;
+">
+  <div class="container" style="
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+      background-color: rgba(255,255,255,0.9);
+      border-radius: 1rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  ">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <h2 class="mb-4 text-center">{% trans "Редактировать опрос" %}</h2>
+
+        {% if messages %}
+          <div class="mb-4">
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }}" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="{% trans 'Close' %}">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+          <div class="form-group mb-3">
+            {{ form.text.label_tag }}
+            {{ form.text }}
+            {% for err in form.text.errors %}
+              <small class="text-danger d-block">{{ err }}</small>
+            {% endfor %}
+          </div>
+
+          <div class="form-check mb-4">
+            {{ form.is_quiz }}
+            {{ form.is_quiz.label_tag }}
+            {% for err in form.is_quiz.errors %}
+              <small class="text-danger d-block">{{ err }}</small>
+            {% endfor %}
+          </div>
+
+          <!-- Кнопки действий с увеличенным отступом -->
+          <div class="d-flex flex-wrap mb-5">
+            <button type="submit" class="btn btn-primary mr-3 mb-2">
+              {% trans "Обновить опрос" %}
+            </button>
+            <a href="{% url 'polls:delete' poll.slug %}"
+               class="btn btn-danger mr-3 mb-2"
+               onclick="return confirm('{% trans "Are you sure?" %}')">
+              {% trans "Удалить опрос" %}
+            </a>
+            <a href="{% url 'polls:add_choice' poll.slug %}"
+               class="btn btn-warning mb-2">
+              {% trans "Добавить вариант" %}
+            </a>
+          </div>
+        </form>
+
+        <h3 class="text-center mb-3">{% trans "Варианты" %}</h3>
+        <ul class="list-group mb-4">
+          {% for choice in poll.questions.first.choices.all %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <div class="d-flex align-items-center">
+                <a href="{% url 'polls:choice_edit' choice.id %}"
+                   class="btn btn-sm btn-outline-primary mr-3">
+                  <i class="fas fa-pencil-alt"></i>
+                </a>
+                {{ choice.choice_text }}
+                {% if poll.is_quiz and choice.is_correct %}
+                  <span class="badge bg-success ml-3">{% trans "Правильный" %}</span>
+                {% endif %}
+              </div>
+              <a href="{% url 'polls:choice_delete' choice.id %}"
+                 class="btn btn-sm btn-outline-danger"
+                 onclick="return confirm('{% trans "Вы уверены, что хотите удалить вариант?" %}')">
+                <i class="fas fa-trash-alt"></i>
+              </a>
+            </li>
+          {% empty %}
+            <li class="list-group-item text-center text-muted">
+              {% trans "Варианты отсутствуют." %}
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load i18n static %}
+
+{% block body_class %}polls-already-voted-page{% endblock %}
+
+{% block content %}
+<div style="
+    background: url('{% static 'img/voting-pattern.png' %}') center center / cover no-repeat fixed;
+    min-height: 100vh;
+    padding: 2rem 0;
+">
+  <div class="container" style="
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+      background-color: rgba(255,255,255,0.85);
+      border-radius: 1rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  ">
+    <div class="alert alert-warning" role="alert">
+      {% trans "You have already voted in this poll." %}
+    </div>
+    <div class="d-flex justify-content-center">
+      <a href="{% url 'polls:results' poll.slug %}" class="btn btn-primary mr-2">
+        {% trans "View Results" %}
+      </a>
+      <a href="{% url 'polls:list' %}" class="btn btn-secondary">
+        {% trans "Back to Polls" %}
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
