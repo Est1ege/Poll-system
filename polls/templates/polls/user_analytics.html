@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "My Analytics Dashboard" %}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h2 class="mb-0">
+            <i class="fas fa-chart-line"></i> 
+            {% trans "My Analytics Dashboard" %}
+          </h2>
+          <div>
+            <a href="{% url 'polls:export_user_data' %}?format=csv" class="btn btn-success mr-2">
+              <i class="fas fa-download"></i> {% trans "Export CSV" %}
+            </a>
+            <a href="{% url 'polls:export_user_data' %}?format=json" class="btn btn-info">
+              <i class="fas fa-code"></i> {% trans "Export JSON" %}
+            </a>
+          </div>
+        </div>
+        <div class="card-body">
+          <!-- Общая статистика -->
+          <div class="row mb-4">
+            <div class="col-md-2">
+              <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                  <h4>{{ total_polls }}</h4>
+                  <p class="mb-0">{% trans "Total Polls" %}</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                  <h4>{{ active_polls }}</h4>
+                  <p class="mb-0">{% trans "Active Polls" %}</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                  <h4>{{ total_votes }}</h4>
+                  <p class="mb-0">{% trans "Total Votes" %}</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                  <h4>{{ quiz_polls }}</h4>
+                  <p class="mb-0">{% trans "Quiz Polls" %}</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="card bg-secondary text-white">
+                <div class="card-body text-center">
+                  <h4>{{ multi_question_polls }}</h4>
+                  <p class="mb-0">{% trans "Multi-Question" %}</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <div class="card bg-dark text-white">
+                <div class="card-body text-center">
+                  <h4>{{ total_polls|add:"0"|floatformat:1 }}</h4>
+                  <p class="mb-0">{% trans "Avg Votes/Poll" %}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Топ опросы -->
+          {% if top_polls %}
+            <div class="card mb-4">
+              <div class="card-header">
+                <h5 class="mb-0">
+                  <i class="fas fa-trophy"></i> 
+                  {% trans "Top Polls by Votes" %}
+                </h5>
+              </div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-striped">
+                    <thead>
+                      <tr>
+                        <th>{% trans "Poll" %}</th>
+                        <th>{% trans "Votes" %}</th>
+                        <th>{% trans "Status" %}</th>
+                        <th>{% trans "Created" %}</th>
+                        <th>{% trans "Actions" %}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for poll in top_polls %}
+                        <tr>
+                          <td>{{ poll.text|truncatewords:8 }}</td>
+                          <td>
+                            <span class="badge badge-primary">{{ poll.get_vote_count }}</span>
+                          </td>
+                          <td>
+                            {% if poll.active %}
+                              <span class="badge badge-success">{% trans "Active" %}</span>
+                            {% else %}
+                              <span class="badge badge-secondary">{% trans "Ended" %}</span>
+                            {% endif %}
+                          </td>
+                          <td>{{ poll.created_at|date:"d.m.Y" }}</td>
+                          <td>
+                            <a href="{% url 'polls:results' poll.slug %}" class="btn btn-sm btn-success mr-1">
+                              <i class="fas fa-chart-pie"></i>
+                            </a>
+                            <a href="{% url 'polls:analytics' poll.slug %}" class="btn btn-sm btn-info">
+                              <i class="fas fa-chart-line"></i>
+                            </a>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+
+          <!-- Статистика по месяцам -->
+          {% if monthly_stats %}
+            <div class="row">
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h5 class="mb-0">
+                      <i class="fas fa-calendar-alt"></i> 
+                      {% trans "Polls Created by Month" %}
+                    </h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="table-responsive">
+                      <table class="table table-sm">
+                        <thead>
+                          <tr>
+                            <th>{% trans "Month" %}</th>
+                            <th>{% trans "Polls" %}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for stat in monthly_stats %}
+                            <tr>
+                              <td>{{ stat.month|date:"F Y" }}</td>
+                              <td>
+                                <span class="badge badge-primary">{{ stat.count }}</span>
+                              </td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="card">
+                  <div class="card-header">
+                    <h5 class="mb-0">
+                      <i class="fas fa-vote-yea"></i> 
+                      {% trans "Votes Received by Month" %}
+                    </h5>
+                  </div>
+                  <div class="card-body">
+                    <div class="table-responsive">
+                      <table class="table table-sm">
+                        <thead>
+                          <tr>
+                            <th>{% trans "Month" %}</th>
+                            <th>{% trans "Votes" %}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for vote_stat in monthly_votes %}
+                            <tr>
+                              <td>{{ vote_stat.month|date:"F Y" }}</td>
+                              <td>
+                                <span class="badge badge-success">{{ vote_stat.count }}</span>
+                              </td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+
+          <!-- Кнопки навигации -->
+          <div class="mt-4 text-center">
+            <a href="{% url 'polls:list_by_user' %}" class="btn btn-secondary mr-2">
+              <i class="fas fa-arrow-left"></i> {% trans "Back to Dashboard" %}
+            </a>
+            <a href="{% url 'polls:list' %}" class="btn btn-primary">
+              <i class="fas fa-list"></i> {% trans "All Polls" %}
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% load i18n static %}
+
+{% block body_class %}user-polls-page{% endblock %}
+
+{% block content %}
+<!-- Фоновая обёртка -->
+<div style="
+    background: url('{% static 'img/voting-pattern.png' %}') center center / cover no-repeat fixed;
+    min-height: 100vh;
+    padding: 2rem 0;
+">
+  <!-- Центрированный полупрозрачный контейнер -->
+  <div class="container" style="
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      background-color: rgba(255,255,255,0.85);
+      border-radius: 1rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  ">
+    <div class="row">
+      <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+          <h1 class="mb-0">{% trans "My Polls Dashboard" %}</h1>
+          <div>
+            <a href="{% url 'polls:user_analytics' %}" class="btn btn-info mr-2">
+              <i class="fas fa-chart-line"></i> {% trans "My Analytics" %}
+            </a>
+            <a href="{% url 'polls:export_user_data' %}?format=csv" class="btn btn-success mr-2">
+              <i class="fas fa-download"></i> {% trans "Export My Data" %}
+            </a>
+          </div>
+        </div>
+
+        {% if messages %}
+          <div class="messages mb-3">
+            {% for message in messages %}
+              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="close" data-dismiss="alert" aria-label="{% trans 'Close' %}">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        <!-- Мои созданные опросы -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h3 class="mb-0">
+              <i class="fas fa-crown text-primary"></i> 
+              {% trans "My Created Polls" %} ({{ owned_polls.count }})
+            </h3>
+          </div>
+          <div class="card-body">
+            {% if owned_polls %}
+              <div class="list-group">
+                {% for poll in owned_polls %}
+                  <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                      <a href="{% url 'polls:detail' poll.slug %}" class="mr-3">
+                        {{ poll.text|truncatewords:5 }}
+                      </a>
+                      <span class="badge badge-primary mr-2">
+                        <i class="fas fa-crown"></i> {% trans "Owner" %}
+                      </span>
+                      {% if not poll.active %}
+                        <span class="badge badge-secondary">
+                          <i class="fas fa-check-circle"></i> {% trans "Ended" %}
+                        </span>
+                      {% endif %}
+                    </div>
+                    <div>
+                      <a href="{% url 'polls:results' poll.slug %}" class="btn btn-sm btn-success mr-1">
+                        <i class="fas fa-chart-pie"></i> {% trans "Results" %}
+                      </a>
+                      <a href="{% url 'polls:edit' poll.slug %}" class="btn btn-sm btn-outline-secondary mr-1">
+                        <i class="fas fa-edit"></i> {% trans "Edit" %}
+                      </a>
+                      <a href="{% url 'polls:share' poll.slug %}" class="btn btn-sm btn-info">
+                        <i class="fas fa-share-alt"></i> {% trans "Share" %}
+                      </a>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p class="text-muted">{% trans "You haven't created any polls yet." %}</p>
+              <a href="{% url 'polls:add' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> {% trans "Create Your First Poll" %}
+              </a>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Опросы, в которых я проголосовал -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h3 class="mb-0">
+              <i class="fas fa-check text-success"></i> 
+              {% trans "Polls I Voted In" %} ({{ voted_polls.count }})
+            </h3>
+          </div>
+          <div class="card-body">
+            {% if voted_polls %}
+              <div class="list-group">
+                {% for poll in voted_polls %}
+                  <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                      <a href="{% url 'polls:detail' poll.slug %}" class="mr-3">
+                        {{ poll.text|truncatewords:5 }}
+                      </a>
+                      <span class="badge badge-success mr-2">
+                        <i class="fas fa-check"></i> {% trans "Voted" %}
+                      </span>
+                      {% if not poll.active %}
+                        <span class="badge badge-secondary">
+                          <i class="fas fa-check-circle"></i> {% trans "Ended" %}
+                        </span>
+                      {% endif %}
+                    </div>
+                    <div>
+                      <a href="{% url 'polls:results' poll.slug %}" class="btn btn-sm btn-success mr-1">
+                        <i class="fas fa-chart-pie"></i> {% trans "Results" %}
+                      </a>
+                      <a href="{% url 'polls:share' poll.slug %}" class="btn btn-sm btn-info">
+                        <i class="fas fa-share-alt"></i> {% trans "Share" %}
+                      </a>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p class="text-muted">{% trans "You haven't voted in any polls yet." %}</p>
+              <a href="{% url 'polls:list' %}" class="btn btn-success">
+                <i class="fas fa-vote-yea"></i> {% trans "Find Polls to Vote" %}
+              </a>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Доступные для голосования опросы -->
+        <div class="card mb-4">
+          <div class="card-header">
+            <h3 class="mb-0">
+              <i class="fas fa-clock text-warning"></i> 
+              {% trans "Available Polls to Vote" %} ({{ available_polls.count }})
+            </h3>
+          </div>
+          <div class="card-body">
+            {% if available_polls %}
+              <div class="list-group">
+                {% for poll in available_polls %}
+                  <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                      <a href="{% url 'polls:detail' poll.slug %}" class="mr-3">
+                        {{ poll.text|truncatewords:5 }}
+                      </a>
+                      <span class="badge badge-warning mr-2">
+                        <i class="fas fa-clock"></i> {% trans "Not voted" %}
+                      </span>
+                      <small class="text-muted">
+                        by {{ poll.owner.username }}
+                      </small>
+                    </div>
+                    <div>
+                      <a href="{% url 'polls:detail' poll.slug %}" class="btn btn-sm btn-primary mr-1">
+                        <i class="fas fa-vote-yea"></i> {% trans "Vote" %}
+                      </a>
+                      <a href="{% url 'polls:share' poll.slug %}" class="btn btn-sm btn-info">
+                        <i class="fas fa-share-alt"></i> {% trans "Share" %}
+                      </a>
+                    </div>
+                  </div>
+                {% endfor %}
+              </div>
+            {% else %}
+              <p class="text-muted">{% trans "No polls available for voting at the moment." %}</p>
+              <a href="{% url 'polls:list' %}" class="btn btn-warning">
+                <i class="fas fa-search"></i> {% trans "Browse All Polls" %}
+              </a>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Кнопки навигации -->
+        <div class="text-center">
+          <a href="{% url 'polls:list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> {% trans "Back to All Polls" %}
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} 

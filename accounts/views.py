@@ -19,6 +19,7 @@ from django.contrib.auth.decorators import login_required
 from polls.models import Poll, Vote
 from django.utils import timezone
 from datetime import timedelta
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 
 def login_user(request):
@@ -83,6 +84,7 @@ def create_user(request):
     return render(request, 'accounts/register.html', {'form': form})
 
 
+@ensure_csrf_cookie
 def password_reset_request(request):
     if request.method == "POST":
         password_reset_form = CustomPasswordResetForm(request.POST)

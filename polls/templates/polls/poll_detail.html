@@ -37,6 +37,33 @@
 
     <h3 class="mt-3 mb-3">{{ poll.text }}</h3>
 
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        {% if user_has_voted %}
+          <span class="badge badge-success">
+            <i class="fas fa-check"></i> {% trans "You have voted" %}
+          </span>
+        {% elif is_owner %}
+          <span class="badge badge-primary">
+            <i class="fas fa-crown"></i> {% trans "You are the owner" %}
+          </span>
+        {% else %}
+          <span class="badge badge-warning">
+            <i class="fas fa-clock"></i> {% trans "You can vote" %}
+          </span>
+        {% endif %}
+      </div>
+      <div>
+        <small class="text-muted">
+          {% trans "Created by" %}: {{ poll.owner.username }} | 
+          {% trans "Created" %}: {{ poll.created_at|date:"d.m.Y H:i" }}
+          {% if poll.end_date %}
+            | {% trans "Ends" %}: {{ poll.end_date|date:"d.m.Y H:i" }}
+          {% endif %}
+        </small>
+      </div>
+    </div>
+
     <p>{{ poll.description }}</p>
 
     {% if user.is_authenticated and poll.owner == user %}
@@ -51,48 +78,71 @@
 
     <hr>
 
-    <form action="{% url 'polls:vote' poll.slug %}" method="post">
-      {% csrf_token %}
-      
-      {% for question in questions %}
-        <fieldset class="mb-4">
-          <legend class="h5">{{ question.text }}</legend>
-          {% for choice in question.choices.all %}
-            <div class="form-check mb-2">
-              <input
-                class="form-check-input"
-                type="radio"
-                name="question-{{ question.id }}"
-                id="choice-{{ choice.id }}"
-                value="{{ choice.id }}"
-                {% if forloop.first %}checked{% endif %}
-              >
-              <label class="form-check-label" for="choice-{{ choice.id }}">
-                {{ choice.choice_text }}
-              </label>
-            </div>
-          {% endfor %}
-        </fieldset>
-      {% empty %}
-        <p>{% trans "This poll has no questions." %}</p>
-      {% endfor %}
-
-      {% if questions %}
-      <div class="mt-4 d-flex justify-content-between">
-        <button type="submit" class="btn btn-primary">
-          {% trans "Vote" %}
-        </button>
-        <div>
-          <a href="{% url 'polls:share' poll.slug %}" class="btn btn-info mr-2">
-            <i class="fas fa-share-alt"></i> {% trans "Share" %}
-          </a>
-          <a href="{% url 'polls:list' %}" class="btn btn-secondary">
-            {% trans "Back to Polls" %}
-          </a>
-        </div>
+    {% if user_has_voted %}
+      <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> 
+        {% trans "You have already voted in this poll. You can view the results below." %}
       </div>
-      {% endif %}
-    </form>
+      <a href="{% url 'polls:results' poll.slug %}" class="btn btn-success">
+        <i class="fas fa-chart-pie"></i> {% trans "View Results" %}
+      </a>
+    {% elif is_owner %}
+      <div class="alert alert-primary">
+        <i class="fas fa-crown"></i> 
+        {% trans "You are the owner of this poll. You can manage it or view results." %}
+      </div>
+      <div class="btn-group" role="group">
+        <a href="{% url 'polls:results' poll.slug %}" class="btn btn-success">
+          <i class="fas fa-chart-pie"></i> {% trans "View Results" %}
+        </a>
+        <a href="{% url 'polls:edit' poll.slug %}" class="btn btn-outline-secondary">
+          <i class="fas fa-edit"></i> {% trans "Edit Poll" %}
+        </a>
+      </div>
+    {% else %}
+      <form action="{% url 'polls:vote' poll.slug %}" method="post">
+        {% csrf_token %}
+        
+        {% for question in questions %}
+          <fieldset class="mb-4">
+            <legend class="h5">{{ question.text }}</legend>
+            {% for choice in question.choices.all %}
+              <div class="form-check mb-2">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="question-{{ question.id }}"
+                  id="choice-{{ choice.id }}"
+                  value="{{ choice.id }}"
+                  {% if forloop.first %}checked{% endif %}
+                >
+                <label class="form-check-label" for="choice-{{ choice.id }}">
+                  {{ choice.choice_text }}
+                </label>
+              </div>
+            {% endfor %}
+          </fieldset>
+        {% empty %}
+          <p>{% trans "This poll has no questions." %}</p>
+        {% endfor %}
+
+        {% if questions %}
+        <div class="mt-4 d-flex justify-content-between">
+          <button type="submit" class="btn btn-primary">
+            {% trans "Vote" %}
+          </button>
+          <div>
+            <a href="{% url 'polls:share' poll.slug %}" class="btn btn-info mr-2">
+              <i class="fas fa-share-alt"></i> {% trans "Share" %}
+            </a>
+            <a href="{% url 'polls:list' %}" class="btn btn-secondary">
+              {% trans "Back to Polls" %}
+            </a>
+          </div>
+        </div>
+        {% endif %}
+      </form>
+    {% endif %}
   </div>
 </div>
 {% endblock %}

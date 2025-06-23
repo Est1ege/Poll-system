@@ -72,15 +72,39 @@
         <ul class="list-group">
           {% for poll in polls %}
             <li class="list-group-item d-flex justify-content-between align-items-center">
-              <a href="{% url 'polls:detail' poll.slug %}">
-                {{ poll.text|truncatewords:5 }}
-                {% if not poll.active %}<i class="fas fa-check-circle ml-2"></i>{% endif %}
-              </a>
+              <div class="d-flex align-items-center">
+                <a href="{% url 'polls:detail' poll.slug %}" class="mr-3">
+                  {{ poll.text|truncatewords:5 }}
+                </a>
+                {% if poll.user_has_voted %}
+                  <span class="badge badge-success mr-2">
+                    <i class="fas fa-check"></i> {% trans "Voted" %}
+                  </span>
+                {% elif poll.is_owner %}
+                  <span class="badge badge-primary mr-2">
+                    <i class="fas fa-crown"></i> {% trans "Owner" %}
+                  </span>
+                {% else %}
+                  <span class="badge badge-warning mr-2">
+                    <i class="fas fa-clock"></i> {% trans "Not voted" %}
+                  </span>
+                {% endif %}
+                {% if not poll.active %}
+                  <span class="badge badge-secondary">
+                    <i class="fas fa-check-circle"></i> {% trans "Ended" %}
+                  </span>
+                {% endif %}
+              </div>
               <div>
                 <a href="{% url 'polls:share' poll.slug %}" class="btn btn-sm btn-info mr-1" title="{% trans 'Share' %}">
                   <i class="fas fa-share-alt"></i>
                 </a>
-                {% if request.user == poll.owner %}
+                {% if poll.user_has_voted or not poll.active %}
+                  <a href="{% url 'polls:results' poll.slug %}" class="btn btn-sm btn-success mr-1" title="{% trans 'View Results' %}">
+                    <i class="fas fa-chart-pie"></i>
+                  </a>
+                {% endif %}
+                {% if poll.is_owner %}
                   {% if poll.active %}
                     <a href="{% url 'polls:end_poll' poll.slug %}"
                        onclick="return confirm('{% trans 'Are you sure?' %}')"

@@ -12,7 +12,10 @@
             </li>
             {% if request.user.is_authenticated %}
             <li class="nav-item">
-                <a class="nav-link" href="{% url 'polls:list' %}">{% trans "Polls" %}</a>
+                <a class="nav-link" href="{% url 'polls:list' %}">{% trans "All Polls" %}</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'polls:list_by_user' %}">{% trans "My Dashboard" %}</a>
             </li>
             {% endif %}
         </ul>
@@ -42,9 +45,13 @@
                     <a class="dropdown-item" href="{% url 'accounts:profile' %}">
                         <i class="fas fa-user"></i> {% trans "Profile" %}
                     </a>
-                    <a class="dropdown-item" href="{% url 'polls:list' %}?user={{ request.user.id }}">
-                        <i class="fas fa-list"></i> {% trans "My Polls" %}
+                    <a class="dropdown-item" href="{% url 'polls:list_by_user' %}">
+                        <i class="fas fa-tachometer-alt"></i> {% trans "My Dashboard" %}
                     </a>
+                    <a class="dropdown-item" href="{% url 'polls:user_analytics' %}">
+                        <i class="fas fa-chart-line"></i> {% trans "My Analytics" %}
+                    </a>
+
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="{% url 'accounts:logout' %}">
                         <i class="fas fa-sign-out-alt"></i> {% trans "Logout" %}

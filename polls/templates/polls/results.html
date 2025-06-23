@@ -32,25 +32,7 @@
     {% endif %}
 
     <div class="row">
-      <div class="col-md-8 offset-sm-2">
-
-        {# Если это викторина и пользователь уже ответил, показываем результат правильности #}
-        {% if poll.is_quiz and selected %}
-          {% if is_correct %}
-            <div class="alert alert-success">
-              {% trans "Correct! Well done." %}
-            </div>
-          {% else %}
-            <div class="alert alert-danger">
-              {% trans "Incorrect. The correct answer was:" %}
-              <strong>
-                {% for c in poll.choice_set.all %}
-                  {% if c.is_correct %}{{ c.choice_text }}{% endif %}
-                {% endfor %}
-              </strong>
-            </div>
-          {% endif %}
-        {% endif %}
+      <div class="col-md-10 offset-sm-1">
 
         {# Заголовок результатов или окончания опроса #}
         {% if poll.active %}
@@ -64,41 +46,119 @@
         {% endif %}
 
         {# Общее число голосов #}
-        <h4 class="mb-2 text-center">
+        <h4 class="mb-4 text-center">
           {% blocktrans with total=poll.get_vote_count %}Total votes: {{ total }}{% endblocktrans %}
         </h4>
 
-        {# Графическое отображение распределения голосов #}
-        <div class="progress mt-3 mb-4" style="height: 1.5rem;">
-          {% for choice in poll.get_result_dict %}
-            <div
-              class="progress-bar bg-{{ choice.alert_class }}"
-              role="progressbar"
-              style="width: {{ choice.percentage }}%;"
-              aria-valuenow="{{ choice.percentage }}"
-              aria-valuemin="0"
-              aria-valuemax="100"
-            >
-              <strong>{{ choice.text|truncatewords:3 }} – {{ choice.percentage|floatformat:1 }}%</strong>
+        {# Результаты по каждому вопросу #}
+        {% for question_data in questions_data %}
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">
+                {% trans "Question" %} {{ forloop.counter }}: {{ question_data.question.text }}
+              </h5>
+              <small class="text-muted">
+                {% blocktrans with votes=question_data.total_votes %}Votes: {{ votes }}{% endblocktrans %}
+              </small>
             </div>
-          {% endfor %}
-        </div>
+            <div class="card-body">
+              {# Графическое отображение распределения голосов для вопроса #}
+              <div class="progress mb-3" style="height: 1.5rem;">
+                {% for choice_data in question_data.choices %}
+                  <div
+                    class="progress-bar 
+                      {% if choice_data.is_wrong_user_choice %}bg-danger
+                      {% elif choice_data.is_correct %}bg-success
+                      {% else %}bg-primary{% endif %}"
+                    role="progressbar"
+                    style="width: {{ choice_data.percentage }}%;"
+                    aria-valuenow="{{ choice_data.percentage }}"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    title="{{ choice_data.choice.choice_text }} - {{ choice_data.percentage }}%"
+                  >
+                    <strong>{{ choice_data.percentage|floatformat:1 }}%</strong>
+                  </div>
+                {% endfor %}
+              </div>
 
-        {# Список вариантов с числом голосов #}
-        <ul class="list-group mb-4">
-          {% for choice in poll.choice_set.all %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              {{ choice.choice_text }}
-              <span class="badge badge-primary badge-pill">{{ choice.get_vote_count }}</span>
-            </li>
-          {% endfor %}
-        </ul>
+              {# Список вариантов с числом голосов и отметкой правильности #}
+              <ul class="list-group">
+                {% for choice_data in question_data.choices %}
+                  <li class="list-group-item d-flex justify-content-between align-items-center 
+                    {% if choice_data.is_wrong_user_choice %}list-group-item-danger
+                    {% elif choice_data.is_correct %}list-group-item-success
+                    {% elif choice_data.is_user_choice %}list-group-item-warning{% endif %}">
+                    <div class="d-flex align-items-center">
+                      {{ choice_data.choice.choice_text }}
+                      {% if choice_data.is_correct %}
+                        <span class="badge badge-success ml-2">
+                          <i class="fas fa-check"></i> {% trans "Correct" %}
+                        </span>
+                      {% endif %}
+                      {% if choice_data.is_wrong_user_choice %}
+                        <span class="badge badge-danger ml-2">
+                          <i class="fas fa-times"></i> {% trans "Your wrong answer" %}
+                        </span>
+                      {% elif choice_data.is_user_choice and choice_data.is_correct %}
+                        <span class="badge badge-success ml-2">
+                          <i class="fas fa-check"></i> {% trans "Your correct answer" %}
+                        </span>
+                      {% endif %}
+                    </div>
+                    <div class="d-flex align-items-center">
+                      <span class="badge badge-primary badge-pill mr-2">{{ choice_data.votes }}</span>
+                      <span class="text-muted">{{ choice_data.percentage|floatformat:1 }}%</span>
+                    </div>
+                  </li>
+                {% endfor %}
+              </ul>
 
-        {# Кнопка возврата к списку #}
-        <div class="text-center">
-          <a class="btn btn-secondary" href="{% url 'polls:list' %}">
-            {% trans "Back to Polls" %}
+              {# Дополнительная информация для викторин #}
+              {% if poll.is_quiz %}
+                <div class="mt-3">
+                  {% with correct_choices=question_data.question.choices.filter.is_correct %}
+                    {% if correct_choices.count == 1 %}
+                      <div class="alert alert-info">
+                        <i class="fas fa-lightbulb"></i>
+                        {% trans "Correct answer:" %} 
+                        {% for choice in correct_choices %}
+                          <strong>{{ choice.choice_text }}</strong>
+                        {% endfor %}
+                      </div>
+                    {% elif correct_choices.count > 1 %}
+                      <div class="alert alert-info">
+                        <i class="fas fa-lightbulb"></i>
+                        {% trans "Correct answers:" %}
+                        {% for choice in correct_choices %}
+                          <strong>{{ choice.choice_text }}</strong>{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                  {% endwith %}
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        {% empty %}
+          <div class="alert alert-warning text-center">
+            {% trans "No questions found for this poll." %}
+          </div>
+        {% endfor %}
+
+        {# Кнопки действий #}
+        <div class="text-center mt-4">
+          <a class="btn btn-secondary mr-2" href="{% url 'polls:list' %}">
+            <i class="fas fa-arrow-left"></i> {% trans "Back to Polls" %}
           </a>
+          {% if user.is_authenticated and poll.owner == user %}
+            <a class="btn btn-info mr-2" href="{% url 'polls:analytics' poll.slug %}">
+              <i class="fas fa-chart-bar"></i> {% trans "Analytics" %}
+            </a>
+            <a class="btn btn-success" href="{% url 'polls:export' poll.slug %}">
+              <i class="fas fa-download"></i> {% trans "Export Results" %}
+            </a>
+          {% endif %}
         </div>
 
       </div>
