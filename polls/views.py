@@ -340,7 +340,9 @@ def choice_delete(request, choice_id):
 
 def poll_detail(request, slug):
     try:
+        print(f"[INFO] Попытка отображения опроса с slug: {slug}")
         poll = get_object_or_404(Poll, slug=slug)
+        
         if not poll.active:
             print(f"[INFO] Опрос {slug} неактивен, перенаправление на результаты")
             return redirect('polls:results', slug=slug)
@@ -363,6 +365,10 @@ def poll_detail(request, slug):
             'user_has_voted': user_has_voted,
             'is_owner': is_owner,
         })
+    except Poll.DoesNotExist:
+        print(f"[ERROR] Опрос с slug '{slug}' не найден в базе данных")
+        messages.error(request, f"Опрос не найден. Возможно, он был удален или перемещен.")
+        return redirect('polls:list')
     except Exception as e:
         print(f"[ERROR] Ошибка в poll_detail: {str(e)}")
         messages.error(request, f"Ошибка при отображении опроса: {e}")
@@ -803,46 +809,50 @@ def post_comment(request, poll_id):
 @login_required
 def user_analytics(request):
     try:
-        # Получаем все опросы пользователя
-        user_polls = Poll.objects.filter(owner=request.user).order_by('-pub_date')
-        
-        # Общая статистика
-        total_polls = user_polls.count()
-        active_polls = user_polls.filter(active=True).count()
-        total_votes = sum(poll.get_vote_count for poll in user_polls)
-        
-        # Статистика по типам опросов
-        quiz_polls = user_polls.filter(is_quiz=True).count()
-        multi_question_polls = user_polls.filter(is_multi_question=True).count()
-        
-        # Топ опросы по количеству голосов
-        top_polls = sorted(user_polls, key=lambda x: x.get_vote_count, reverse=True)[:5]
-        
-        # Статистика по месяцам
-        monthly_stats = user_polls.annotate(
+        # --- Статистика создателя ---
+        creator_polls = Poll.objects.filter(owner=request.user)
+        total_polls_created = creator_polls.count()
+        active_polls_created = creator_polls.filter(active=True).count()
+        total_votes_on_my_polls = Vote.objects.filter(question__poll__owner=request.user).count()
+        avg_votes_per_poll = total_votes_on_my_polls / total_polls_created if total_polls_created > 0 else 0
+
+        # --- Статистика голосующего ---
+        user_votes = Vote.objects.filter(user=request.user)
+        total_votes_cast = user_votes.count()
+        voted_polls_count = user_votes.values('question__poll').distinct().count()
+
+        # Статистика по квизам
+        quiz_votes = user_votes.filter(question__poll__is_quiz=True)
+        correct_quiz_votes = quiz_votes.filter(choice__is_correct=True).count()
+        quiz_accuracy = (correct_quiz_votes / quiz_votes.count() * 100) if quiz_votes.count() > 0 else 0
+
+        # --- Общая статистика ---
+        # Топ-5 самых популярных опросов, в которых голосовал пользователь
+        top_voted_polls = Poll.objects.filter(questions__vote__user=request.user).annotate(
+            vote_count=Count('questions__vote')
+        ).order_by('-vote_count')[:5]
+
+        # Активность голосования по месяцам
+        monthly_voting_activity = user_votes.annotate(
             month=TruncMonth('created_at')
         ).values('month').annotate(
             count=Count('id')
         ).order_by('month')
-        
-        # Статистика голосования по месяцам
-        monthly_votes = Vote.objects.filter(
-            question__poll__owner=request.user
-        ).annotate(
-            month=TruncMonth('created_at')
-        ).values('month').annotate(
-            count=Count('id')
-        ).order_by('month')
-        
+
         context = {
-            'total_polls': total_polls,
-            'active_polls': active_polls,
-            'total_votes': total_votes,
-            'quiz_polls': quiz_polls,
-            'multi_question_polls': multi_question_polls,
-            'top_polls': top_polls,
-            'monthly_stats': list(monthly_stats),
-            'monthly_votes': list(monthly_votes),
+            # Статистика создателя
+            'total_polls_created': total_polls_created,
+            'active_polls_created': active_polls_created,
+            'total_votes_on_my_polls': total_votes_on_my_polls,
+            'avg_votes_per_poll': avg_votes_per_poll,
+            # Статистика голосующего
+            'total_votes_cast': total_votes_cast,
+            'voted_polls_count': voted_polls_count,
+            'correct_quiz_votes': correct_quiz_votes,
+            'quiz_accuracy': quiz_accuracy,
+            # Общая статистика
+            'top_voted_polls': top_voted_polls,
+            'monthly_voting_activity': list(monthly_voting_activity),
         }
         
         print(f"[INFO] Общая аналитика пользователя отображена для {request.user.username}")
@@ -1007,17 +1017,16 @@ def global_analytics(request):
         ).filter(vote_count__gt=0).order_by('-vote_count')[:10]
         
         # Статистика по дням недели
-        from django.db.models.functions import ExtractDayOfWeek
+        from django.db.models.functions import Extract
         votes_by_day = Vote.objects.annotate(
-            day_of_week=ExtractDayOfWeek('created_at')
+            day_of_week=Extract('created_at', 'dow')
         ).values('day_of_week').annotate(
             count=Count('id')
         ).order_by('day_of_week')
         
         # Статистика по часам
-        from django.db.models.functions import ExtractHour
         votes_by_hour = Vote.objects.annotate(
-            hour=ExtractHour('created_at')
+            hour=Extract('created_at', 'hour')
         ).values('hour').annotate(
             count=Count('id')
         ).order_by('hour')
